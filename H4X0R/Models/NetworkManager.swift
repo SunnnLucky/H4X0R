@@ -7,42 +7,35 @@
 
 import Foundation
 
-class NetworkManager {
+
+/*符合ObservableObject协议的类可以使用SwiftUI的@Published属性包装器自动声明对属性的更改，以便使用该对象的所有视图都可以重新调用其body属性，并与数据保持同步。*/
+class NetworkManager : ObservableObject {
     
-    static let algoliaURL : String = "http://hn.algolia.com/api/v1/search?tags=front_page"
+    /*SwiftUI最有用的包装器之一，允许开发者创建出能够被自动观察的对象属性，SwiftUI会自动监视这个属性，一旦该属性发生了改变，会自动修改与该属性绑定的界面。*/
+    @Published var posts = [Post]()
     
-    class func fetchData(successClosures : @escaping (Results)->(),failClosures: @escaping (String)->() ) {
+    let algoliaURL : String = "http://hn.algolia.com/api/v1/search?tags=front_page"
+    
+//    class func fetchData(successClosures : @escaping (Results)->(),failClosures: @escaping (String)->() ) {
+    func fetchData() {
         guard let url = URL(string: algoliaURL) else {return}
         let session = URLSession(configuration: .default)
         let task = session.dataTask(with: url) { data, response, error in
             if let error = error {
-                failClosures(error.localizedDescription)
+                print(error.localizedDescription)
             } else {
-                guard let safeData = data else { failClosures("data为空"); return }
+                guard let safeData = data else { print("data为空"); return }
                 let decoder = JSONDecoder()
                 do {
                     let decodeData = try decoder.decode(Results.self, from: safeData)
                     DispatchQueue.main.async {
-                        successClosures(decodeData)
+                        self.posts = decodeData.hits
                     }
                 } catch {
-                    failClosures(error.localizedDescription)
+                    print(error.localizedDescription)
                 }
             }
         }
         task.resume()
     }
-    
-//    class func parseJSON(_ data: Data, failClosures: (String)->()) -> Results? {
-//        let decoder = JSONDecoder()
-//        do {
-//            let decodeData = try decoder.decode(Results.self, from: data)
-////            let rate = decodeData.rate
-////            let postModel = PostData()
-//            return decodeData
-//        } catch {
-//            failClosures(error.localizedDescription)
-//            return nil
-//        }
-//    }
 }
