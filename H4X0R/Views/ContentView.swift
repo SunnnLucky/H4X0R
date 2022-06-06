@@ -10,7 +10,7 @@ import SwiftUI
 //@State var post : [Post]
 
 struct ContentView: View {
-
+    
     /*观测对象修饰器，被ObservedObject修饰的变量只要有变化就会自动更新*/
     @ObservedObject var networkManager = NetworkManager()
     
@@ -18,9 +18,11 @@ struct ContentView: View {
         NavigationView {
             List(networkManager.posts) { post in
                 //Trailing Closures
-                HStack {
-                    Text(String(post.points))
-                    Text(post.title)
+                NavigationLink(destination: DetailView(url: post.url)) {
+                    HStack {
+                        Text(String(post.points))
+                        Text(post.title)
+                    }
                 }
             }
             .navigationTitle("H4X0R NEWS")
@@ -36,6 +38,6 @@ struct ContentView: View {
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
         ContentView()
-//            .preferredColorScheme(.dark)
+        //            .preferredColorScheme(.dark)
     }
 }
